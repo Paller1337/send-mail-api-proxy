@@ -13,7 +13,7 @@ Mail API Proxy — SMTP‑прокси для Timeweb
 # Установка на VPS одной командой
 Выполните на сервере (Debian/Ubuntu)
 ```
-REPO_URL=https://raw.githubusercontent.com/Paller1337/send-mail-api-proxy.git \
+REPO_URL=https://github.com/Paller1337/send-mail-api-proxy.git \
 BRANCH=main \
 HTTP_PORT=8080 \
 bash -c "$(wget -qO- https://raw.githubusercontent.com/Paller1337/send-mail-api-proxy/main/scripts/install_server.sh)"
