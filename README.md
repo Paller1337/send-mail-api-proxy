@@ -2,7 +2,7 @@ Mail API Proxy — SMTP‑прокси для Timeweb
 
 Статичный HTTP‑сервис для отправки писем через SMTP (Timeweb и др.). Один эндпоинт: `POST /send-mail`. Пароли нигде не сохраняются: получил запрос → отправил через указанный SMTP.
 
-### Возможности
+# Возможности
 - Отправка писем через SSL/TLS 465 и STARTTLS 25/2525
 - Валидация входных данных
 - Идемпотентность по `Idempotency-Key`/`message.customId`
@@ -10,7 +10,7 @@ Mail API Proxy — SMTP‑прокси для Timeweb
 - Наблюдаемость: `GET /health`, `GET /config`, `GET /smtp-modes`, `GET /metrics` (опц.)
 - Логи JSON (pino), Docker/Compose
 
-### Установка на VPS одной командой
+# Установка на VPS одной командой
 Выполните на сервере (Debian/Ubuntu)
 ```
 REPO_URL=https://raw.githubusercontent.com/Paller1337/send-mail-api-proxy.git \
@@ -20,7 +20,7 @@ bash -c "$(wget -qO- https://raw.githubusercontent.com/Paller1337/send-mail-api-
 ```
 Скрипт установит Docker + Compose, клонирует проект в `/opt/mail-api-proxy`, создаст `.env` (если нет) и запустит `docker compose up -d --build`.
 
-# Кастомные параметры (пример)
+### Кастомные параметры (пример)
 ```
 REPO_URL=https://github.com/<user>/<repo>.git \
 BRANCH=main \
@@ -36,7 +36,7 @@ bash -c "$(wget -qO- https://raw.githubusercontent.com/<user>/<repo>/main/script
 ```
 Все указанные переменные скрипт пропишет/обновит в `/opt/mail-api-proxy/.env` перед запуском.
 
-### Быстрый старт локально (Docker Compose)
+# Быстрый старт локально (Docker Compose)
 ```
 cp .env.example .env
 ./scripts/compose-up.sh
@@ -44,7 +44,7 @@ curl http://localhost:8080/health
 ```
 Остановка: `./scripts/compose-down.sh`
 
-### Переменные окружения (.env)
+# Переменные окружения (.env)
 - `PORT=8080` — порт в контейнере
 - `HTTP_PORT=8080` — публикуемый порт хоста
 - `TRUST_PROXY=1` — доверять первому прокси
@@ -63,7 +63,7 @@ curl http://localhost:8080/health
   - `SMTP_SOCKET_TIMEOUT_MS=30000`
   - `MAIL_SEND_TIMEOUT_MS=45000`
 
-### Дефолтные настройки
+# Дефолтные настройки
 - Порт сервиса: `PORT=8080` (в контейнере), публикация: `HTTP_PORT=8080`
 - Trust proxy: `TRUST_PROXY=1`
 - Лимит тела: `REQUEST_BODY_LIMIT=2mb`
@@ -77,14 +77,14 @@ curl http://localhost:8080/health
 - SMTP режимы: не ограничены (`SMTP_ALLOWED_MODES` пустой)
 - Таймауты SMTP: `15000/15000/30000`, отправка `45000` мс
 
-### API
+# API
 - `GET /health` — статус + разрешённые SMTP‑режимы
 - `GET /config` — текущая конфигурация (без секретов)
 - `GET /smtp-modes?host=smtp.timeweb.ru[&modes=465-tls,2525-starttls]` — проверка доступности режимов
 - `GET /metrics` — метрики Prometheus (если включено)
 - `POST /send-mail` — отправка письма
 
-# Минимальный запрос (TLS 465)
+### Минимальный запрос (TLS 465)
 ```
 POST /send-mail
 Content-Type: application/json
@@ -112,10 +112,10 @@ STARTTLS (если 465 недоступен)
 "secure": false
 ```
 
-# Идемпотентность
+### Идемпотентность
 - Добавьте заголовок `Idempotency-Key: <ключ>` или поле `message.customId`. Повторные запросы с тем же ключом вернут первый ответ в течение `IDEMPOTENCY_TTL_SECONDS`.
 
-# Коды ответов
+### Коды ответов
 - `200` — `{ id, accepted, rejected }`
 - `400` — ошибка валидации
 - `401` — Basic Auth/IP‑allowlist
@@ -124,17 +124,17 @@ STARTTLS (если 465 недоступен)
 - `504` — таймаут/недоступность SMTP
 - `500` — иная ошибка
 
-# SMTP‑режимы и диагностика
+### SMTP‑режимы и диагностика
 - На некоторых VPS/ISP исходящие 25/465 заблокированы; 2525 чаще открыт.
 - Проверяйте доступность: `GET /smtp-modes`.
 - Ограничивайте режимы политикой: `SMTP_ALLOWED_MODES=2525-starttls` или, например, `465-tls,2525-starttls`.
 
-# Обновление
+### Обновление
 ```
 docker compose up -d --build
 ```
 
-# Логи
+### Логи
 ```
 docker compose logs -f
 ```
