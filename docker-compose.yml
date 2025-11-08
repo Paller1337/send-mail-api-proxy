@@ -1,0 +1,27 @@
+services:
+  mail-api-proxy:
+    build: .
+    image: mail-api-proxy:latest
+    container_name: mail-api-proxy
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      PORT: ${PORT:-8080}
+
+    ports:
+      - "${HTTP_PORT:-8080}:8080"
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
