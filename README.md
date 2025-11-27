@@ -138,3 +138,33 @@ docker compose up -d --build
 ```
 docker compose logs -f
 ```
+
+### ���������� ������� ������� `/send-mail`
+
+������ ������ ������� ��� ��������� ������ �?� �� ����������� (��� ������� �������� ������� выше), �?� ��� �?� ������������ ����� ����� ������������ ��������� ����:
+
+#### ������ `smtp`
+- `host` (string) �?" SMTP ���� (��. ������: `smtp.timeweb.ru`)
+- `port` (number) �?" ����, ������. 465 (SSL/TLS), 25/2525 (STARTTLS)
+- `secure` (boolean) �?" `true` ��� SSL/TLS, `false` ��� STARTTLS
+- `username` (string) �?" ����� ��� SMTP-����� (��������, `no-reply@yourdomain.ru`)
+- `password` (string) �?" ������ �� SMTP-�����
+- `dkimPrivateKey` (string, optional) �?" DKIM �������� ���� (���� ��������, ��������� ���������� DKIM �� �������)
+- `dkimKeySelector` (string, optional) �?" DKIM selector (���� �� ������������, �� ���������� `default`)
+- `dkimDomain` (string, optional) �?" ������ ��� DKIM (���� �� ������������, �� ������ ����������� �� ���� � `message.from`)
+
+#### ������ `message`
+- `from` (string) �?" ���� ������, ��������, `no-reply@yourdomain.ru` ��� `"Name <no-reply@yourdomain.ru>"`
+- `to` (string[]) �?" ������ ����������������� �����
+- `cc` (string[], optional) �?" ������ ����������������� � CC
+- `bcc` (string[], optional) �?" ������ ����������������� � BCC
+- `subject` (string) �?" ���� ������
+- `text` (string, optional) �?" ���������� � plain-text
+- `html` (string, optional) �?" HTML-���������� (�������� ����� ���� `text`, ����� `html`, ��� ��� ����� ����� �� ������)
+- `replyTo` (string, optional) �?" ���� � ����� `Reply-To`
+- `attachments` (array, optional) �?" ������ ���������:
+  - `filename` (string) �?" ��� �����
+  - `contentBase64` (string) �?" ������ ������� base64
+  - `contentType` (string, optional) �?" MIME-��� (��������, `application/pdf`)
+- `headers` (object, optional) �?" ���������������� SMTP/���-������
+- `customId` (string, optional) �?" ������������� ID ��������� ��� �?�?��?���?�'��?�'�?�?�?�'�? (������ �� `Idempotency-Key`)

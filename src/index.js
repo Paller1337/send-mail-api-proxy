@@ -47,7 +47,11 @@ const allowedModes = parseAllowedModes(SMTP_ALLOWED_MODES);
 const logger = pino({
   level: LOG_LEVEL,
   redact: {
-    paths: ['req.headers.authorization', 'req.body.smtp.password'],
+    paths: [
+      'req.headers.authorization',
+      'req.body.smtp.password',
+      'req.body.smtp.dkimPrivateKey',
+    ],
     remove: true,
   },
 });
@@ -174,6 +178,9 @@ const SmtpSchema = z.object({
   secure: z.boolean().default(true),
   username: z.string(),
   password: z.string(),
+  dkimPrivateKey: z.string().optional(),
+  dkimKeySelector: z.string().optional(),
+  dkimDomain: z.string().optional(),
 });
 const SendMailSchema = z.object({
   smtp: SmtpSchema,
@@ -204,9 +211,28 @@ function getIdempotencyKey(reqBody, req) {
   return headerKey || bodyKey || '';
 }
 
+function extractDomainFromAddress(address) {
+  if (!address || typeof address !== 'string') return '';
+  const match = address.match(/<([^>]+)>/);
+  const email = match ? match[1] : address;
+  const atIndex = email.lastIndexOf('@');
+  if (atIndex === -1) return '';
+  return email.slice(atIndex + 1).trim();
+}
+
 async function sendViaSmtp(reqBody) {
   const { smtp, message } = reqBody;
-  const transporter = nodemailer.createTransport({
+  const dkimOptions = {};
+  if (smtp.dkimPrivateKey) {
+    const domainName = smtp.dkimDomain || extractDomainFromAddress(message.from);
+    if (domainName) {
+      dkimOptions.domainName = domainName;
+      dkimOptions.keySelector = smtp.dkimKeySelector || 'default';
+      dkimOptions.privateKey = smtp.dkimPrivateKey;
+    }
+  }
+
+  const transportConfig = {
     host: smtp.host,
     port: smtp.port,
     secure: smtp.secure,
@@ -215,7 +241,13 @@ async function sendViaSmtp(reqBody) {
     greetingTimeout: SMTP_GREETING_TIMEOUT_MS,
     socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
     auth: { user: smtp.username, pass: smtp.password },
-  });
+  };
+
+  if (dkimOptions.domainName && dkimOptions.privateKey && dkimOptions.keySelector) {
+    transportConfig.dkim = dkimOptions;
+  }
+
+  const transporter = nodemailer.createTransport(transportConfig);
   const mailOptions = {
     from: message.from,
     to: message.to && message.to.length ? message.to.join(', ') : undefined,
